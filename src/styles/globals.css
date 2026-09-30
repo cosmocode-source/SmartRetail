@@ -1,0 +1,57 @@
+@import "./tokens.css";
+@import "./components.css";
+
+* { box-sizing: border-box; }
+html { color-scheme: light; background: var(--color-canvas); }
+body { margin: 0; min-width: 320px; background: var(--color-canvas); color: var(--color-text); font: 400 16px/1.5 var(--font-sans); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+img, svg { display: block; max-width: 100%; }
+::selection { background: #dbeafe; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; box-shadow: 0 0 0 3px rgba(37, 99, 235, .18); }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+
+h1, h2, h3, p { margin-top: 0; }
+h1 { margin-bottom: var(--space-2); font-size: clamp(24px, 3vw, 28px); line-height: 1.2; letter-spacing: -.02em; }
+h2 { margin-bottom: var(--space-4); font-size: 18px; line-height: 1.35; }
+h3 { margin-bottom: var(--space-2); font-size: 16px; line-height: 1.4; }
+.muted { color: var(--color-text-secondary); }
+.metadata { color: var(--color-text-secondary); font-size: 14px; }
+
+.app-shell { min-height: 100vh; display: grid; grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+.sidebar { position: sticky; top: 0; min-width: 0; height: 100vh; display: flex; flex-direction: column; padding: var(--space-6) var(--space-4); background: var(--color-surface); border-right: 1px solid var(--color-border); }
+.brand { display: flex; align-items: center; gap: var(--space-3); min-height: 44px; padding: 0 var(--space-2); font-weight: 700; letter-spacing: -.01em; }
+.brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--radius-sm); background: var(--color-primary); color: white; font-size: 14px; }
+.nav { display: grid; gap: var(--space-1); margin-top: var(--space-8); }
+.nav a { min-height: 44px; display: flex; align-items: center; padding: 0 var(--space-3); border-radius: var(--radius-sm); color: var(--color-text-secondary); font-size: 15px; font-weight: 520; }
+.nav a:hover { background: var(--color-surface-subtle); color: var(--color-text); }
+.nav a[aria-current="page"] { background: var(--color-primary-soft); color: #174ea6; }
+.sidebar-footer { margin-top: auto; padding: var(--space-4) var(--space-2) 0; border-top: 1px solid var(--color-border); }
+.main { min-width: 0; }
+.topbar { height: 64px; display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4); padding: 0 var(--space-8); background: rgba(247, 248, 250, .94); border-bottom: 1px solid var(--color-border); }
+.page { width: min(100%, var(--content-max)); margin: 0 auto; padding: var(--space-8); }
+.page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-6); margin-bottom: var(--space-8); }
+.page-header p { margin: 0; max-width: 760px; }
+.page-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.section { margin-top: var(--space-8); }
+.section-header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-4); }
+.section-header h2 { margin: 0; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-6); }
+
+@media (max-width: 900px) {
+  .app-shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; width: auto; height: auto; padding: var(--space-4); border-right: 0; border-bottom: 1px solid var(--color-border); }
+  .nav { display: flex; width: 100%; max-width: calc(100vw - 32px); overflow-x: auto; margin-top: var(--space-3); padding-bottom: var(--space-1); }
+  .nav a { white-space: nowrap; }
+  .sidebar-footer { display: none; }
+  .topbar { display: none; }
+  .page { padding: var(--space-6); }
+}
+@media (max-width: 640px) {
+  .page { padding: var(--space-4); }
+  .page-header, .section-header { align-items: stretch; flex-direction: column; }
+  .page-actions > * { flex: 1 1 auto; }
+  .grid-2 { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; } }
