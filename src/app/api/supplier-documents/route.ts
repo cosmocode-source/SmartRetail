@@ -6,7 +6,9 @@ import { createSupplierDocument, listSupplierDocuments } from "@/lib/services/su
 import { supplierDocumentSchema } from "@/lib/validation/purchasing";
 
 export async function GET() {
-  if (!(await getSession())) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  const user = await getSession();
+  try { requireRole(user, ["admin"]); }
+  catch { return NextResponse.json({ error: "Admin access required" }, { status: 403 }); }
   return NextResponse.json({ documents: await listSupplierDocuments() });
 }
 

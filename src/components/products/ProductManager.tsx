@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import type { Category, Product } from "@/lib/services/products";
 
-export function ProductManager({ initialProducts, categories }: { initialProducts: Product[]; categories: Category[] }) {
+export function ProductManager({ initialProducts, categories, canManage }: { initialProducts: Product[]; categories: Category[]; canManage: boolean }) {
   const [products, setProducts] = useState(initialProducts);
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
@@ -45,7 +45,7 @@ export function ProductManager({ initialProducts, categories }: { initialProduct
   }
 
   return <div style={{ display: "grid", gap: 24 }}>
-    <form className="surface panel" onSubmit={addProduct} style={{ display: "grid", gap: 16 }}>
+    {canManage && <form className="surface panel" onSubmit={addProduct} style={{ display: "grid", gap: 16 }}>
       <h2>Add product</h2>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
         <label className="field"><span className="label">SKU</span><input className="input" name="sku" required /></label>
@@ -56,7 +56,7 @@ export function ProductManager({ initialProducts, categories }: { initialProduct
       <label className="field"><span className="label">Description</span><input className="input" name="description" /></label>
       {error && <p className="field-error" role="alert">{error}</p>}
       <div><button className="btn btn-primary" disabled={busy}>{busy ? "Saving…" : "Add product"}</button></div>
-    </form>
+    </form>}
 
     <section className="surface">
       <form className="toolbar" onSubmit={(event) => { event.preventDefault(); void reload(); }}>
@@ -64,7 +64,7 @@ export function ProductManager({ initialProducts, categories }: { initialProduct
         <button className="btn btn-secondary">Search</button>
       </form>
       <div className="table-wrap"><table><thead><tr><th>SKU</th><th>Product</th><th>Category</th><th>Price</th><th>Status</th><th>Action</th></tr></thead>
-        <tbody>{products.map((product) => <tr key={product.productId}><td>{product.sku}</td><td><strong>{product.name}</strong><div className="metadata">{product.description}</div></td><td>{product.categoryName}</td><td>₹{Number(product.price).toFixed(2)}</td><td><StatusBadge tone={product.active ? "success" : "neutral"}>{product.active ? "Active" : "Inactive"}</StatusBadge></td><td><button className="btn btn-secondary" onClick={() => void toggle(product)}>{product.active ? "Deactivate" : "Activate"}</button></td></tr>)}</tbody>
+        <tbody>{products.map((product) => <tr key={product.productId}><td>{product.sku}</td><td><strong>{product.name}</strong><div className="metadata">{product.description}</div></td><td>{product.categoryName}</td><td>₹{Number(product.price).toFixed(2)}</td><td><StatusBadge tone={product.active ? "success" : "neutral"}>{product.active ? "Active" : "Inactive"}</StatusBadge></td><td>{canManage ? <button className="btn btn-secondary" onClick={() => void toggle(product)}>{product.active ? "Deactivate" : "Activate"}</button> : "—"}</td></tr>)}</tbody>
       </table>{products.length === 0 && <div className="empty-state"><p>No products found.</p></div>}</div>
     </section>
   </div>;

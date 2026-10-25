@@ -7,7 +7,8 @@ import { writeAudit } from "@/lib/services/audit";
 
 export async function GET() {
   const user = await getSession();
-  if (!user) return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  try { requireRole(user, ["admin"]); }
+  catch { return NextResponse.json({ error: "Admin access required" }, { status: 403 }); }
   return NextResponse.json({ suppliers: await listSuppliers() });
 }
 
