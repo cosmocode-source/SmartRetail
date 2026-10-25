@@ -9,7 +9,7 @@ export function AppShell({ children, current = "/dashboard" }: { children: React
     <aside className="sidebar" aria-label="Primary navigation">
       <a className="brand" href="/dashboard"><span className="brand-mark">SR</span><span>SmartRetail</span></a>
       <nav className="nav">{nav.map(([href, label]) => <a key={href} href={href} aria-current={current === href ? "page" : undefined}>{label}</a>)}</nav>
-      <div className="sidebar-footer"><strong>Main Store</strong><div className="metadata">Admin workspace</div></div>
+      <div className="sidebar-footer"><strong>Main Store</strong><div className="metadata">Admin workspace</div><form action="/api/auth/logout" method="post"><button className="btn btn-secondary" type="submit">Sign out</button></form></div>
     </aside>
     <main className="main"><header className="topbar"><span className="metadata">Main Store</span><strong>Admin User</strong></header>{children}</main>
   </div>;
