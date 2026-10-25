@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { purchaseOrderSchema, supplierSchema } from "@/lib/validation/purchasing";
+import { purchaseOrderSchema, supplierDocumentSchema, supplierSchema } from "@/lib/validation/purchasing";
 
 describe("purchasing validation", () => {
   it("accepts a supplier and one-line purchase order", () => {
@@ -9,5 +9,9 @@ describe("purchasing validation", () => {
 
   it("rejects empty orders", () => {
     expect(purchaseOrderSchema.safeParse({ supplierId: 1, storeId: 1, expectedAt: null, items: [] }).success).toBe(false);
+  });
+
+  it("validates supplier document metadata", () => {
+    expect(supplierDocumentSchema.safeParse({ supplierId: 1, documentType: "contract", storageKey: "contracts/2026.pdf", validTill: null }).success).toBe(true);
   });
 });

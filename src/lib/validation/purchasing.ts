@@ -17,3 +17,10 @@ export const purchaseOrderSchema = z.object({
     unitCost: z.number().positive()
   })).min(1)
 });
+
+export const supplierDocumentSchema = z.object({
+  supplierId: z.number().int().positive(),
+  documentType: z.enum(["certificate", "contract", "catalog", "other"]),
+  storageKey: z.string().trim().min(2).max(500),
+  validTill: z.string().date().nullable()
+});
