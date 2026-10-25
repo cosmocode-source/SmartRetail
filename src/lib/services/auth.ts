@@ -6,7 +6,7 @@ type UserRow = SessionUser & { password_hash: string };
 
 export async function authenticate(email: string, password: string): Promise<SessionUser | null> {
   const result = await postgres.query<UserRow>(
-    `SELECT user_id AS "userId", role, store_id AS "storeId", password_hash
+    `SELECT user_id::int AS "userId", role, store_id::int AS "storeId", password_hash
      FROM users WHERE lower(email) = $1 AND active = TRUE`,
     [email]
   );

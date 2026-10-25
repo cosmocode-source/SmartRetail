@@ -1,7 +1,7 @@
 const nav = [
   ["/dashboard", "Overview"], ["/pos", "Point of Sale"], ["/inventory", "Inventory"],
   ["/products", "Products"], ["/purchase-orders", "Purchase orders"],
-  ["/suppliers", "Suppliers"], ["/customers", "Customers"], ["/analytics", "Analytics"]
+  ["/suppliers", "Suppliers"], ["/customers", "Customers"], ["/analytics", "Analytics"], ["/settings", "Settings"]
 ];
 
 export function AppShell({ children, current = "/dashboard" }: { children: React.ReactNode; current?: string }) {
