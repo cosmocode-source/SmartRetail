@@ -1,12 +1,15 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { InventoryManager } from "@/components/inventory/InventoryManager";
+import { getSession } from "@/lib/auth/session";
+import { getInventory } from "@/lib/services/inventory";
 
-export default function Page() {
+export default async function Page() {
+  const user = await getSession();
+  const storeId = user?.storeId || 1;
+  const { items, movements } = await getInventory(storeId);
   return <AppShell current="/inventory"><div className="page">
-    <PageHeader title="Inventory" description="Monitor stock by store, review movement history, and act on reorder signals." actions={<button className="btn btn-primary">Adjust stock</button>} />
-    <section className="surface">
-      <div className="toolbar"><label className="field"><span className="label">Search</span><input className="input" placeholder="Search records" /></label><label className="field"><span className="label">Status</span><select className="select"><option>All statuses</option><option>Active</option><option>Needs attention</option></select></label></div>
-      <div className="empty-state"><h2>Connect the inventory service</h2><p>This implementation-ready layout defines the intended controls and states. Replace this draft state with server-loaded data from `src/lib/services`.</p><button className="btn btn-secondary">Review file guide</button></div>
-    </section>
+    <PageHeader title="Inventory" description="Monitor stock, record adjustments, and act on reorder signals." />
+    <InventoryManager storeId={storeId} initialItems={items} initialMovements={movements} />
   </div></AppShell>;
 }

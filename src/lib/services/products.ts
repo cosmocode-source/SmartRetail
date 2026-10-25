@@ -1,4 +1,4 @@
-import { postgres } from "@/lib/db/postgres";
+import { postgres, withTransaction } from "@/lib/db/postgres";
 import type { z } from "zod";
 import type { productSchema } from "@/lib/validation/products";
 
@@ -36,13 +36,20 @@ export async function listCategories() {
 }
 
 export async function createProduct(input: ProductInput) {
-  const result = await postgres.query<{ productId: number }>(
-    `INSERT INTO products(category_id, sku, name, description, price)
-     VALUES ($1, $2, $3, NULLIF($4, ''), $5)
-     RETURNING product_id::int AS "productId"`,
-    [input.categoryId, input.sku, input.name, input.description, input.price]
-  );
-  return result.rows[0];
+  return withTransaction(async (client) => {
+    const result = await client.query<{ productId: number }>(
+      `INSERT INTO products(category_id, sku, name, description, price)
+       VALUES ($1, $2, $3, NULLIF($4, ''), $5)
+       RETURNING product_id::int AS "productId"`,
+      [input.categoryId, input.sku, input.name, input.description, input.price]
+    );
+    await client.query(
+      `INSERT INTO inventory(product_id, store_id, quantity, reorder_threshold)
+       SELECT $1, store_id, 0, 5 FROM stores WHERE active = TRUE`,
+      [result.rows[0].productId]
+    );
+    return result.rows[0];
+  });
 }
 
 export async function setProductActive(productId: number, active: boolean) {
