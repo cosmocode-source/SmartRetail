@@ -3,6 +3,7 @@ import { checkoutSchema } from "@/lib/validation/checkout";
 import { checkout } from "@/lib/services/checkout";
 import { getSession } from "@/lib/auth/session";
 import { requireStoreAccess } from "@/lib/auth/authorize";
+import { writeAudit } from "@/lib/services/audit";
 
 export async function POST(request: Request) {
   const actor = await getSession();
@@ -11,7 +12,11 @@ export async function POST(request: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Invalid checkout", details: parsed.error.flatten() }, { status: 400 });
   try { requireStoreAccess(actor, parsed.data.storeId); }
   catch { return NextResponse.json({ error: "Store access denied" }, { status: 403 }); }
-  try { return NextResponse.json(await checkout(parsed.data, actor.userId), { status: 201 }); }
+  try {
+    const result = await checkout(parsed.data, actor.userId);
+    await writeAudit({ actorUserId: actor.userId, storeId: parsed.data.storeId, action: "order.created", entityType: "order", entityId: result.orderId, context: { totalAmount: result.totalAmount } });
+    return NextResponse.json(result, { status: 201 });
+  }
   catch (error) {
     const code = error instanceof Error ? error.message : "";
     const messages: Record<string, string> = {

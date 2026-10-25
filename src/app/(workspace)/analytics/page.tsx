@@ -1,12 +1,13 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { getSession } from "@/lib/auth/session";
+import { getAnalytics } from "@/lib/services/analytics";
 
-export default function Page() {
+export default async function Page() {
+  const user = await getSession(); const data = await getAnalytics(user?.storeId || 1);
   return <AppShell current="/analytics"><div className="page">
-    <PageHeader title="Analytics" description="Analyze sales, product performance, inventory health, and customer segments." actions={<button className="btn btn-primary">Export report</button>} />
-    <section className="surface">
-      <div className="toolbar"><label className="field"><span className="label">Search</span><input className="input" placeholder="Search records" /></label><label className="field"><span className="label">Status</span><select className="select"><option>All statuses</option><option>Active</option><option>Needs attention</option></select></label></div>
-      <div className="empty-state"><h2>Connect the analytics service</h2><p>This implementation-ready layout defines the intended controls and states. Replace this draft state with server-loaded data from `src/lib/services`.</p><button className="btn btn-secondary">Review file guide</button></div>
-    </section>
+    <PageHeader title="Analytics" description="Live sales, product, stock, and customer summaries." />
+    <div className="grid-2"><section><div className="section-header"><h2>Top products</h2></div><div className="surface table-wrap"><table><thead><tr><th>Product</th><th>Units</th><th>Revenue</th></tr></thead><tbody>{data.topProducts.map((product) => <tr key={product.name}><td>{product.name}</td><td>{product.unitsSold}</td><td>₹{Number(product.revenue).toFixed(2)}</td></tr>)}</tbody></table></div></section>
+    <section><div className="section-header"><h2>Customer segments</h2></div><div className="surface table-wrap"><table><thead><tr><th>Segment</th><th>Customers</th></tr></thead><tbody>{data.segments.map((segment) => <tr key={segment.segment}><td>{segment.segment.replace("_", " ")}</td><td>{segment.customerCount}</td></tr>)}</tbody></table></div></section></div>
   </div></AppShell>;
 }

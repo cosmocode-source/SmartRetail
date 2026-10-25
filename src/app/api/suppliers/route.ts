@@ -3,6 +3,7 @@ import { getSession } from "@/lib/auth/session";
 import { requireRole } from "@/lib/auth/authorize";
 import { createSupplier, listSuppliers } from "@/lib/services/purchasing";
 import { supplierSchema } from "@/lib/validation/purchasing";
+import { writeAudit } from "@/lib/services/audit";
 
 export async function GET() {
   const user = await getSession();
@@ -16,5 +17,7 @@ export async function POST(request: Request) {
   catch { return NextResponse.json({ error: user ? "Admin access required" : "Authentication required" }, { status: user ? 403 : 401 }); }
   const parsed = supplierSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Check the supplier details." }, { status: 400 });
-  return NextResponse.json(await createSupplier(parsed.data), { status: 201 });
+  const supplier = await createSupplier(parsed.data);
+  await writeAudit({ actorUserId: user!.userId, action: "supplier.created", entityType: "supplier", entityId: supplier.supplierId });
+  return NextResponse.json(supplier, { status: 201 });
 }
