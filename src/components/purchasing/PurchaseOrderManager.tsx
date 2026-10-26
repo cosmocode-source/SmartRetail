@@ -9,9 +9,9 @@ export function PurchaseOrderManager({ storeId, initialOrders, suppliers, produc
   const [orders, setOrders] = useState(initialOrders); const [error, setError] = useState("");
   async function reload() { const result = await fetch(`/api/purchase-orders?storeId=${storeId}`).then((value) => value.json()); setOrders(result.orders); }
   async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError(""); const form = new FormData(event.currentTarget);
+    event.preventDefault(); setError(""); const formElement = event.currentTarget; const form = new FormData(formElement);
     const response = await fetch("/api/purchase-orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ supplierId: Number(form.get("supplierId")), storeId, expectedAt: form.get("expectedAt") || null, items: [{ productId: Number(form.get("productId")), orderedQty: Number(form.get("orderedQty")), unitCost: Number(form.get("unitCost")) }] }) });
-    const result = await response.json(); if (!response.ok) return setError(result.error || "Purchase order could not be saved."); event.currentTarget.reset(); await reload();
+    const result = await response.json(); if (!response.ok) return setError(result.error || "Purchase order could not be saved."); formElement.reset(); await reload();
   }
   async function receive(poId: number) { const response = await fetch(`/api/purchase-orders/${poId}/receive`, { method: "POST" }); const result = await response.json(); if (!response.ok) return setError(result.error); await reload(); }
   return <div style={{ display: "grid", gap: 24 }}><form className="surface panel" onSubmit={submit} style={{ display: "grid", gap: 16 }}><h2>New purchase order</h2><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 16 }}>

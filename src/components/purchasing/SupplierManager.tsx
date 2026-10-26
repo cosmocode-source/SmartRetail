@@ -10,18 +10,19 @@ export function SupplierManager({ initialSuppliers, initialDocuments }: { initia
   const [error, setError] = useState("");
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setError("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const response = await fetch("/api/suppliers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(form)) });
     const result = await response.json();
     if (!response.ok) return setError(result.error || "Supplier could not be saved.");
-    event.currentTarget.reset();
+    formElement.reset();
     const refreshed = await fetch("/api/suppliers").then((value) => value.json());
     setSuppliers(refreshed.suppliers);
   }
   async function addDocument(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError(""); const form = new FormData(event.currentTarget);
+    event.preventDefault(); setError(""); const formElement = event.currentTarget; const form = new FormData(formElement);
     const response = await fetch("/api/supplier-documents", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ supplierId: Number(form.get("supplierId")), documentType: form.get("documentType"), storageKey: form.get("storageKey"), validTill: form.get("validTill") || null }) });
-    const result = await response.json(); if (!response.ok) return setError(result.error || "Document could not be saved."); event.currentTarget.reset();
+    const result = await response.json(); if (!response.ok) return setError(result.error || "Document could not be saved."); formElement.reset();
     const refreshed = await fetch("/api/supplier-documents").then((value) => value.json()); setDocuments(refreshed.documents);
   }
   return <div style={{ display: "grid", gap: 24 }}>

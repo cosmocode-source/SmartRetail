@@ -18,14 +18,15 @@ export function InventoryManager({ storeId, initialItems, initialMovements }: { 
   async function adjust(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const response = await fetch("/api/inventory/adjustments", {
       method: "POST", headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ storeId, productId: Number(form.get("productId")), changeQty: Number(form.get("changeQty")), reason: form.get("reason") })
     });
     const result = await response.json();
     if (!response.ok) return setError(result.error || "Adjustment failed.");
-    event.currentTarget.reset();
+    formElement.reset();
     await reload();
   }
 
@@ -46,7 +47,7 @@ export function InventoryManager({ storeId, initialItems, initialMovements }: { 
     </tbody></table></section>
 
     <section><div className="section-header"><h2>Recent movements</h2></div><div className="surface table-wrap"><table><thead><tr><th>Product</th><th>Change</th><th>Reason</th><th>Time</th></tr></thead><tbody>
-      {movements.map((movement) => <tr key={movement.movementId}><td>{movement.productName}</td><td className={movement.changeQty > 0 ? "positive" : "warning"}>{movement.changeQty > 0 ? "+" : ""}{movement.changeQty}</td><td>{movement.reason}</td><td>{new Date(movement.createdAt).toLocaleString()}</td></tr>)}
+      {movements.map((movement) => <tr key={movement.movementId}><td>{movement.productName}</td><td className={movement.changeQty > 0 ? "positive" : "warning"}>{movement.changeQty > 0 ? "+" : ""}{movement.changeQty}</td><td>{movement.reason}</td><td>{movement.createdAt}</td></tr>)}
     </tbody></table>{movements.length === 0 && <div className="empty-state"><p>No stock movements yet.</p></div>}</div></section>
   </div>;
 }

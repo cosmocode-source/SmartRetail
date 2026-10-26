@@ -32,7 +32,7 @@ export async function getInventory(storeId: number, query = "") {
     ),
     postgres.query<StockMovement>(
       `SELECT sm.movement_id::int AS "movementId", p.name AS "productName", sm.change_qty AS "changeQty",
-              sm.reason, sm.created_at::text AS "createdAt"
+              sm.reason, to_char(sm.created_at AT TIME ZONE 'Asia/Kolkata', 'DD/MM/YYYY HH24:MI:SS') AS "createdAt"
        FROM stock_movements sm JOIN products p USING(product_id)
        WHERE sm.store_id = $1 ORDER BY sm.created_at DESC LIMIT 20`,
       [storeId]

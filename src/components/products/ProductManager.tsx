@@ -20,7 +20,8 @@ export function ProductManager({ initialProducts, categories, canManage }: { ini
     event.preventDefault();
     setBusy(true);
     setError("");
-    const form = new FormData(event.currentTarget);
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
     const response = await fetch("/api/products", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -32,7 +33,7 @@ export function ProductManager({ initialProducts, categories, canManage }: { ini
     const result = await response.json();
     setBusy(false);
     if (!response.ok) return setError(result.error || "Product could not be saved.");
-    event.currentTarget.reset();
+    formElement.reset();
     await reload();
   }
 

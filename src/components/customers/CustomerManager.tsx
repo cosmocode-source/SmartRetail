@@ -8,9 +8,9 @@ export function CustomerManager({ initialCustomers }: { initialCustomers: Custom
   const [customers, setCustomers] = useState(initialCustomers); const [query, setQuery] = useState(""); const [error, setError] = useState("");
   async function reload(search = query) { const result = await fetch(`/api/customers?query=${encodeURIComponent(search)}`).then((value) => value.json()); setCustomers(result.customers); }
   async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError(""); const form = new FormData(event.currentTarget);
+    event.preventDefault(); setError(""); const formElement = event.currentTarget; const form = new FormData(formElement);
     const response = await fetch("/api/customers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(form)) });
-    const result = await response.json(); if (!response.ok) return setError(result.error || "Customer could not be saved."); event.currentTarget.reset(); await reload();
+    const result = await response.json(); if (!response.ok) return setError(result.error || "Customer could not be saved."); formElement.reset(); await reload();
   }
   return <div style={{ display: "grid", gap: 24 }}><form className="surface panel" onSubmit={submit} style={{ display: "grid", gap: 16 }}><h2>Add customer</h2><div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 16 }}>
     <label className="field"><span className="label">Name</span><input className="input" name="name" required /></label><label className="field"><span className="label">Phone</span><input className="input" name="phone" required /></label><label className="field"><span className="label">Email</span><input className="input" name="email" type="email" /></label>

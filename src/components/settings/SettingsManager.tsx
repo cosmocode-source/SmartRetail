@@ -9,10 +9,10 @@ export function SettingsManager({ initialData }: { initialData: SettingsData }) 
   const [data, setData] = useState(initialData); const [error, setError] = useState("");
   async function refresh() { const response = await fetch("/api/settings"); if (response.ok) setData(await response.json()); }
   async function submit(event: FormEvent<HTMLFormElement>, type: "store" | "category" | "staff") {
-    event.preventDefault(); setError(""); const form = new FormData(event.currentTarget);
+    event.preventDefault(); setError(""); const formElement = event.currentTarget; const form = new FormData(formElement);
     const values: Record<string, unknown> = { type, ...Object.fromEntries(form) }; if (type === "staff") values.storeId = Number(form.get("storeId"));
     const response = await fetch("/api/settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(values) });
-    const result = await response.json(); if (!response.ok) return setError(result.error || "Could not save."); event.currentTarget.reset(); await refresh();
+    const result = await response.json(); if (!response.ok) return setError(result.error || "Could not save."); formElement.reset(); await refresh();
   }
   return <div style={{ display: "grid", gap: 24 }}>{error && <p className="field-error" role="alert">{error}</p>}<div className="grid-2">
     <form className="surface panel" onSubmit={(event) => void submit(event, "store")} style={{ display: "grid", gap: 16 }}><h2>Add store</h2><label className="field"><span className="label">Name</span><input className="input" name="name" required /></label><label className="field"><span className="label">Location</span><input className="input" name="location" required /></label><button className="btn btn-primary">Add store</button></form>
