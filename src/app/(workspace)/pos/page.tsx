@@ -1,12 +1,16 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { PosManager } from "@/components/pos/PosManager";
+import { getSession } from "@/lib/auth/session";
+import { listSellableProducts } from "@/lib/services/checkout";
+import { listCustomers } from "@/lib/services/customers";
 
-export default function Page() {
+export default async function Page() {
+  const user = await getSession();
+  const storeId = user?.storeId || 1;
+  const [products, customers] = await Promise.all([listSellableProducts(storeId), listCustomers()]);
   return <AppShell current="/pos"><div className="page">
-    <PageHeader title="Point of Sale" description="Search products, build an in-store basket, and complete an atomic checkout." actions={<button className="btn btn-primary">Start checkout</button>} />
-    <section className="surface">
-      <div className="toolbar"><label className="field"><span className="label">Search</span><input className="input" placeholder="Search records" /></label><label className="field"><span className="label">Status</span><select className="select"><option>All statuses</option><option>Active</option><option>Needs attention</option></select></label></div>
-      <div className="empty-state"><h2>Connect the point of sale service</h2><p>This implementation-ready layout defines the intended controls and states. Replace this draft state with server-loaded data from `src/lib/services`.</p><button className="btn btn-secondary">Review file guide</button></div>
-    </section>
+    <PageHeader title="Point of Sale" description="Build an in-store basket and complete an atomic checkout." />
+    <PosManager storeId={storeId} products={products} customers={customers} />
   </div></AppShell>;
 }

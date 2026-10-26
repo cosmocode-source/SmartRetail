@@ -5,7 +5,7 @@ services:
       POSTGRES_DB: smartretail
       POSTGRES_USER: smartretail
       POSTGRES_PASSWORD: change_me
-    ports: ["5432:5432"]
+    ports: ["5433:5432"]
     volumes: ["postgres_data:/var/lib/postgresql/data"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U smartretail"]
@@ -14,7 +14,7 @@ services:
       retries: 10
   mongodb:
     image: mongo:7
-    ports: ["27017:27017"]
+    ports: ["27018:27017"]
     volumes: ["mongo_data:/data/db"]
 volumes:
   postgres_data:

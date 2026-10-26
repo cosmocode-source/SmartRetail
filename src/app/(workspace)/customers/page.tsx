@@ -1,12 +1,12 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { CustomerManager } from "@/components/customers/CustomerManager";
+import { listCustomers } from "@/lib/services/customers";
 
-export default function Page() {
+export default async function Page() {
+  const customers = await listCustomers();
   return <AppShell current="/customers"><div className="page">
-    <PageHeader title="Customers" description="Review purchase history, loyalty balances, and RFM-based customer segments." actions={<button className="btn btn-primary">Add customer</button>} />
-    <section className="surface">
-      <div className="toolbar"><label className="field"><span className="label">Search</span><input className="input" placeholder="Search records" /></label><label className="field"><span className="label">Status</span><select className="select"><option>All statuses</option><option>Active</option><option>Needs attention</option></select></label></div>
-      <div className="empty-state"><h2>Connect the customers service</h2><p>This implementation-ready layout defines the intended controls and states. Replace this draft state with server-loaded data from `src/lib/services`.</p><button className="btn btn-secondary">Review file guide</button></div>
-    </section>
+    <PageHeader title="Customers" description="Review purchase totals, loyalty balances, and customer segments." />
+    <CustomerManager initialCustomers={customers} />
   </div></AppShell>;
 }

@@ -1,12 +1,13 @@
 import { AppShell } from "@/components/layout/AppShell";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { ProductManager } from "@/components/products/ProductManager";
+import { listCategories, listProducts } from "@/lib/services/products";
+import { getSession } from "@/lib/auth/session";
 
-export default function Page() {
+export default async function Page() {
+  const [products, categories, user] = await Promise.all([listProducts(), listCategories(), getSession()]);
   return <AppShell current="/products"><div className="page">
-    <PageHeader title="Products" description="Maintain product records, categories, pricing, suppliers, and active status." actions={<button className="btn btn-primary">Add product</button>} />
-    <section className="surface">
-      <div className="toolbar"><label className="field"><span className="label">Search</span><input className="input" placeholder="Search records" /></label><label className="field"><span className="label">Status</span><select className="select"><option>All statuses</option><option>Active</option><option>Needs attention</option></select></label></div>
-      <div className="empty-state"><h2>Connect the products service</h2><p>This implementation-ready layout defines the intended controls and states. Replace this draft state with server-loaded data from `src/lib/services`.</p><button className="btn btn-secondary">Review file guide</button></div>
-    </section>
+    <PageHeader title="Products" description="Maintain product records, categories, pricing, and active status." />
+    <ProductManager initialProducts={products} categories={categories} canManage={user?.role === "admin"} />
   </div></AppShell>;
 }
