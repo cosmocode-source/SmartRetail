@@ -1,7 +1,5 @@
 # SmartRetail — POS, Inventory & Customer Intelligence
 
-Working Next.js implementation for the revised DBMS Level 3 project. It is intentionally small and suitable for a local college demonstration rather than a production deployment.
-
 ## Revised scope
 Included: in-store POS, multi-store inventory, suppliers, purchase orders, customer records, loyalty points, RFM-style customer segments, role-based access, operational analytics, PostgreSQL, and MongoDB.
 
