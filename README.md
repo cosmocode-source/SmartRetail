@@ -17,6 +17,10 @@ Removed intentionally: online shopping/storefront, carts, online checkout, produ
 - Product barcode labels and an independent `/scanner` phone reader paired to a POS counter.
 
 ## Review demo: purchasing and phone scanning
+For the actual presentation, stop any server occupying port 3000, start Docker, then run `npm run present`. It builds once and serves the optimized app without development hot reload. Use `npm run present -- --port 3100` for another port. Allow the build to finish and check the main tabs before presenting; keep the terminal and Docker running. Phone access uses the laptop's LAN IP and the chosen port.
+
+Development uses `.next-dev`, ordinary build/start uses `.next`, and presentation mode uses `.next-present`. Ordinary build checks cannot overwrite the files being served by development or presentation mode. Do not start a second presentation build during an active presentation.
+
 1. In Purchase orders, select a store. Its current stock and reorder suggestions appear above the order form. Enter the expected delivery date when creating an order; it is shown in the order list. Receiving updates only the order's destination store.
 2. In POS, enter a counter name and choose **Connect phone scanner**. A random counter code and a QR link to `/scanner` appear. Keep this POS tab open.
 3. Connect the phone and laptop to the same Wi-Fi/hotspot. Run `npm run dev -- --hostname 0.0.0.0`; use the port printed by Next.js. The generated phone link uses a detected LAN address when POS is opened on localhost. Check that address if the laptop has multiple networks; firewall/client isolation may block access.
