@@ -10,6 +10,7 @@ Authoritative structured records and all consistency-sensitive workflows: users,
 ### MongoDB
 - `supplier_documents`: flexible certificates, contracts, and catalog metadata.
 - `audit_events`: append-oriented business/security events with varied context.
+- `pos_scanner_sessions`: expiring counter-pairing documents and scan-only delivery queues. Only the owning signed-in POS can read or revoke its queue. The phone holds a random one-hour pairing code. Product SKUs, availability and checkout remain authoritative in PostgreSQL.
 
 MongoDB must not own stock quantities, order totals, payments, or purchase-order state.
 
