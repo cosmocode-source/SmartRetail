@@ -65,10 +65,29 @@ try {
   assert.equal(failed.status, 409);
   assert.equal(Number((await sql.query("SELECT count(*) FROM purchase_orders WHERE supplier_id=$1", [supplierId])).rows[0].count), 1);
   console.log("PASS: staff purchasing restriction, expected-date persistence, selected-store stock, concurrent receive-once and failed-order rollback");
+
+  for (const [daysAgo, amount] of [[1, 300], [2, 200], [8, 100], [0, 9999], [15, 9999]]) {
+    const orderId = await insert(
+      `INSERT INTO orders(receipt_number,store_id,staff_user_id,subtotal,total_amount,created_at)
+       VALUES($1,$2,$3,$4,$4,(((now() AT TIME ZONE 'Asia/Kolkata')::date - $5::int) + time '12:00') AT TIME ZONE 'Asia/Kolkata') RETURNING order_id`,
+      [`${tag.slice(0, 32)}-${daysAgo}`, stores[1], users[2], amount, daysAgo], "order_id"
+    );
+    await sql.query("INSERT INTO order_items(order_id,product_id,quantity,unit_price,line_total) VALUES($1,$2,2,100,200)", [orderId, productId]);
+  }
+  const outlook = await call(`/api/analytics?storeId=${stores[1]}`, cookies[2]);
+  assert.equal(outlook.status, 200);
+  assert.equal(outlook.data.forecast.nextWeek, 300);
+  assert.equal(outlook.data.forecast.changePercent, 400);
+  assert.equal(outlook.data.forecast.transactions, 3);
+  assert.equal(outlook.data.recommendations.find((item) => item.productId === productId).unitsSold, 6);
+  assert.equal((await call(`/api/analytics?storeId=${stores[0]}`, cookies[1])).data.forecast.nextWeek, null);
+  assert.equal((await call(`/api/analytics?storeId=${stores[0]}`, cookies[2])).status, 403);
+  console.log("PASS: forecast query, complete-day window, old/today exclusion, zero-history state and cross-store authorization");
 } finally {
   // Delete only this run's fixtures, following foreign-key dependencies.
   if (productId) {
     await sql.query("DELETE FROM stock_movements WHERE product_id=$1", [productId]);
+    await sql.query("DELETE FROM orders WHERE store_id=ANY($1::bigint[])", [stores]);
     if (supplierId) await sql.query("DELETE FROM purchase_orders WHERE supplier_id=$1", [supplierId]);
     await sql.query("DELETE FROM inventory WHERE product_id=$1", [productId]);
     await sql.query("DELETE FROM products WHERE product_id=$1", [productId]);

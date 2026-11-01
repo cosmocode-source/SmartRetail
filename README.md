@@ -46,4 +46,6 @@ Development administrator: `admin@smartretail.local` / `Admin123!`. Change this 
 Run `npm run typecheck`, `npm test`, `npm run lint`, and `npm run build` before committing.
 
 ## Important
+Analytics includes a small sales outlook and stock advice. It uses 14 complete India-time days, includes zero-sale days, withholds revenue estimates until sales exist on at least three days, and accounts for planned incoming purchase quantities. Admin can select a store; Staff remain scoped to their assigned store. No model training, automatic ordering or new database schema is involved.
+
 This is a working local implementation, not a production deployment. It still needs production secrets, CSRF/rate-limit hardening, broader API/database/concurrency tests, backups, monitoring, and a deployment plan before real use.
