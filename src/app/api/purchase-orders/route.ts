@@ -20,7 +20,11 @@ export async function POST(request: Request) {
   catch { return NextResponse.json({ error: user ? "Admin access required" : "Authentication required" }, { status: user ? 403 : 401 }); }
   const parsed = purchaseOrderSchema.safeParse(await request.json());
   if (!parsed.success) return NextResponse.json({ error: "Check the purchase order details." }, { status: 400 });
-  const order = await createPurchaseOrder(parsed.data, user!.userId);
-  await writeAudit({ actorUserId: user!.userId, storeId: parsed.data.storeId, action: "purchase_order.created", entityType: "purchase_order", entityId: order.poId });
-  return NextResponse.json(order, { status: 201 });
+  try {
+    const order = await createPurchaseOrder(parsed.data, user!.userId);
+    await writeAudit({ actorUserId: user!.userId, storeId: parsed.data.storeId, action: "purchase_order.created", entityType: "purchase_order", entityId: order.poId });
+    return NextResponse.json(order, { status: 201 });
+  } catch {
+    return NextResponse.json({ error: "Purchase order could not be saved. Check the supplier, store and products." }, { status: 409 });
+  }
 }
