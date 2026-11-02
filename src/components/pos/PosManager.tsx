@@ -3,10 +3,14 @@
 import { useMemo, useState } from "react";
 import type { SellableProduct } from "@/lib/services/checkout";
 import type { Customer } from "@/lib/services/customers";
+import { PhoneCounter } from "@/components/pos/PhoneCounter";
+import { useRouter } from "next/navigation";
 
 type CartItem = SellableProduct & { cartQuantity: number };
 
 export function PosManager({ storeId, products, customers }: { storeId: number; products: SellableProduct[]; customers: Customer[] }) {
+  const router = useRouter();
+  const [busy, setBusy] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [discount, setDiscount] = useState(0);
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -32,20 +36,29 @@ export function PosManager({ storeId, products, customers }: { storeId: number; 
   }
 
   async function completeSale() {
-    setMessage("");
-    const response = await fetch("/api/checkout", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ storeId, customerId, discountAmount: discount, paymentMethod, items: cart.map((item) => ({ productId: item.productId, quantity: item.cartQuantity })) })
-    });
-    const result = await response.json();
-    if (!response.ok) return setMessage(result.error || "Checkout failed.");
-    setCart([]);
-    setDiscount(0);
-    setMessage(`Sale complete · ${result.receiptNumber} · ₹${Number(result.totalAmount).toFixed(2)}`);
+    if (busy) return;
+    setMessage(""); setBusy(true);
+    try {
+      const response = await fetch("/api/checkout", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ storeId, customerId, discountAmount: discount, paymentMethod, items: cart.map((item) => ({ productId: item.productId, quantity: item.cartQuantity })) })
+      });
+      const result = await response.json();
+      if (!response.ok) return setMessage(result.error || "Checkout failed.");
+      setCart([]);
+      setDiscount(0);
+      setMessage(`Sale complete · ${result.receiptNumber} · ₹${Number(result.totalAmount).toFixed(2)}`);
+      router.refresh();
+    } catch { setMessage("Checkout connection failed. Check the receipt/order before retrying."); }
+    finally { setBusy(false); }
   }
 
   return <div className="grid-2">
-    <section><div className="section-header"><h2>Products</h2></div><div className="surface table-wrap"><table><thead><tr><th>Product</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>
+    <section><PhoneCounter storeId={storeId} paused={busy} onScan={(sku) => {
+      const product = products.find((item) => item.sku === sku);
+      if (!product) { setMessage(`Scanned SKU ${sku} is unavailable at this store. Refresh stock.`); return; }
+      add(product);
+    }} /><div className="section-header"><h2>Products</h2></div><div className="surface table-wrap"><table><thead><tr><th>Product</th><th>Price</th><th>Stock</th><th></th></tr></thead><tbody>
       {products.map((product) => <tr key={product.productId}><td><strong>{product.name}</strong><div className="metadata">{product.sku}</div></td><td>₹{Number(product.price).toFixed(2)}</td><td>{product.quantity}</td><td><button className="btn btn-secondary" onClick={() => add(product)}>Add</button></td></tr>)}
     </tbody></table></div></section>
     <section><div className="section-header"><h2>Cart</h2></div><div className="surface panel" style={{ display: "grid", gap: 16 }}>
@@ -55,7 +68,7 @@ export function PosManager({ storeId, products, customers }: { storeId: number; 
       <label className="field"><span className="label">Customer (optional)</span><select className="select" value={customerId || ""} onChange={(event) => setCustomerId(event.target.value ? Number(event.target.value) : null)}><option value="">Walk-in customer</option>{customers.map((customer) => <option key={customer.customerId} value={customer.customerId}>{customer.name} · {customer.phone}</option>)}</select></label>
       <div><strong>Subtotal: ₹{subtotal.toFixed(2)}</strong><div className="metadata">Final total includes 5% tax after discount.</div></div>
       {message && <p role="status" className={message.startsWith("Sale complete") ? "positive" : "field-error"}>{message}</p>}
-      <button className="btn btn-primary" disabled={cart.length === 0} onClick={() => void completeSale()}>Complete sale</button>
+      <button className="btn btn-primary" disabled={busy || cart.length === 0} onClick={() => void completeSale()}>{busy ? "Completing sale…" : "Complete sale"}</button>
     </div></section>
   </div>;
 }

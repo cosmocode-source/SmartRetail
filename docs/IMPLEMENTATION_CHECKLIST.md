@@ -19,11 +19,13 @@
 - [x] Server-calculated subtotal, discount, tax, and total.
 - [x] Atomic checkout transaction with row locks.
 - [x] Payment and receipt records.
+- [x] SKU barcode labels and counter-paired `/scanner` phone signals.
 - [ ] Rollback and concurrent-overselling tests.
 
 ## Purchasing
 - [x] Supplier management.
 - [x] Basic purchase-order creation, line items, and received status.
+- [x] Store selection with inventory preview and saved expected-date display.
 - [x] Transactional, idempotent stock receiving.
 - [x] Flexible supplier-document metadata in MongoDB.
 

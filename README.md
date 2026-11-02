@@ -13,6 +13,29 @@ Removed intentionally: online shopping/storefront, carts, online checkout, produ
 - Suppliers, one-line purchase orders, idempotent receiving, and MongoDB document metadata.
 - Live dashboard/analytics data and MongoDB audit events.
 - Admin management for stores, categories, and staff accounts.
+- Store-specific purchasing with stock previews and expected delivery dates.
+- Product barcode labels and an independent `/scanner` phone reader paired to a POS counter.
+
+## Review demo: purchasing and phone scanning
+For the actual presentation, stop any server occupying port 3000, start Docker, then run `npm run present`. It builds once and serves the optimized app without development hot reload. Use `npm run present -- --port 3100` for another port. Allow the build to finish and check the main tabs before presenting; keep the terminal and Docker running. Phone access uses the laptop's LAN IP and the chosen port.
+
+Development uses `.next-dev`, ordinary build/start uses `.next`, and presentation mode uses `.next-present`. Ordinary build checks cannot overwrite the files being served by development or presentation mode. Do not start a second presentation build during an active presentation.
+
+1. In Purchase orders, select a store. Its current stock and reorder suggestions appear above the order form. Enter the expected delivery date when creating an order; it is shown in the order list. Receiving updates only the order's destination store.
+2. In POS, enter a counter name and choose **Connect phone scanner**. A random counter code and a QR link to `/scanner` appear. Keep this POS tab open.
+3. Connect the phone and laptop to the same Wi-Fi/hotspot. Run `npm run dev -- --hostname 0.0.0.0`; use the port printed by Next.js. The generated phone link uses a detected LAN address when POS is opened on localhost. Check that address if the laptop has multiple networks; firewall/client isolation may block access.
+4. On the phone, open `/scanner` at the laptop's address and enter the counter code. The code authorizes scan signals only, not checkout or account access. Sessions expire after one hour; **Disconnect phone** revokes the code immediately. Different POS tabs receive different codes even if counter names match.
+5. Open **Open / print product barcode labels** on the laptop, or visit `/barcodes`. Every current product has a label encoding its PostgreSQL `products.sku`; printable ASCII SKUs use Code 128 and other SKUs use QR. No new SQL column or barcode-image table is needed.
+6. On `/scanner`, choose **Scan next with camera** under HTTPS. For ordinary HTTP LAN access, use **Take barcode photo or choose image** instead: it decodes the photo locally and sends only the SKU and a unique scan ID. A manual SKU fallback is also available. Keep the complete barcode visible and in focus.
+7. Each accepted scan adds one unit to the paired cart, up to the stock shown at the POS. Polling delivers signals about once per second. The phone confirms delivery to the counter queue, while the POS enforces its cart limits. Checkout still verifies and locks real stock in PostgreSQL.
+
+MongoDB also holds temporary `pos_scanner_sessions` documents: random code, owner ID, store ID, counter name, expiry, and scan events. TTL expiry and a unique code index are created automatically on first pairing. Application expiry checks apply immediately. Repeated submissions with the same scan ID append only once; a session accepts at most 5,000 signals. This collection is a delivery queue, not authoritative stock or payment data. A refreshed POS page needs a new pairing; abandoned sessions expire automatically.
+
+Review integration checks (local databases and running app required):
+```bash
+TEST_APP_URL=http://localhost:3000 node --env-file=.env.local tests/review.integration.mjs
+```
+The test creates uniquely named fixtures and removes only those fixtures afterward. It covers store restrictions, counter isolation/expiry/revocation, duplicate scan retries, expected-date persistence, store-specific receiving, concurrent receiving and rollback.
 
 ## Quick start
 1. Run `cp .env.example .env.local` and replace `AUTH_SECRET` for anything beyond local demonstration.
@@ -27,4 +50,6 @@ Development administrator: `admin@smartretail.local` / `Admin123!`. Change this 
 Run `npm run typecheck`, `npm test`, `npm run lint`, and `npm run build` before committing.
 
 ## Important
+Analytics includes a small sales outlook and stock advice. It uses 14 complete India-time days, includes zero-sale days, withholds revenue estimates until sales exist on at least three days, and accounts for planned incoming purchase quantities. Admin can select a store; Staff remain scoped to their assigned store. No model training, automatic ordering or new database schema is involved.
+
 This is a working local implementation, not a production deployment. It still needs production secrets, CSRF/rate-limit hardening, broader API/database/concurrency tests, backups, monitoring, and a deployment plan before real use.

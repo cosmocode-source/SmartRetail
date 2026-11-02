@@ -6,6 +6,10 @@ import type { settingChangeSchema } from "@/lib/validation/settings";
 export type Store = { storeId: number; name: string; location: string };
 export type StaffUser = { userId: number; name: string; email: string; role: string; storeName: string | null; active: boolean };
 
+export async function listStores() {
+  return (await postgres.query<Store>(`SELECT store_id::int AS "storeId", name, location FROM stores WHERE active = TRUE ORDER BY name`)).rows;
+}
+
 export async function getSettings() {
   const [stores, users, categories] = await Promise.all([
     postgres.query<Store>(`SELECT store_id::int AS "storeId", name, location FROM stores WHERE active = TRUE ORDER BY name`),
