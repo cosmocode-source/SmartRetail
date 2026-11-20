@@ -1,56 +1,148 @@
-# SmartRetail — POS, Inventory & Customer Intelligence
+# Data-Driven Retail Management System with POS and Inventory Analytics
 
-## Revised scope
-Included: in-store POS, multi-store inventory, suppliers, purchase orders, customer records, loyalty points, RFM-style customer segments, role-based access, operational analytics, PostgreSQL, and MongoDB.
+## Team information
 
-Removed intentionally: online shopping/storefront, carts, online checkout, product reviews, recommendations, embeddings, and vector databases.
+| Name | SRN |
+| --- | --- |
+| Arin Singh | PES1UG24CS079 |
+| Anshdeep Singh Sachdeva | PES1UG24CS070 |
 
-## Implemented
-- Signed HttpOnly login sessions with Admin and store-scoped Staff roles.
-- Product creation, search, activation, categories, per-store inventory, adjustments, and movements.
-- Atomic POS checkout with locked stock, server totals, payments, receipts, and loyalty points.
-- Customers, purchase summaries, loyalty balances, and customer segments.
-- Suppliers, one-line purchase orders, idempotent receiving, and MongoDB document metadata.
-- Live dashboard/analytics data and MongoDB audit events.
-- Admin management for stores, categories, and staff accounts.
-- Store-specific purchasing with stock previews and expected delivery dates.
-- Product barcode labels and an independent `/scanner` phone reader paired to a POS counter.
+## About the project
 
-## Review demo: purchasing and phone scanning
-For the actual presentation, stop any server occupying port 3000, start Docker, then run `npm run present`. It builds once and serves the optimized app without development hot reload. Use `npm run present -- --port 3100` for another port. Allow the build to finish and check the main tabs before presenting; keep the terminal and Docker running. Phone access uses the laptop's LAN IP and the chosen port.
+**SmartRetail** is a data-driven internal retail operations system for small and mid-sized stores. It brings billing, stock control, purchasing, customer management, loyalty, and business analytics into one application.
 
-Development uses `.next-dev`, ordinary build/start uses `.next`, and presentation mode uses `.next-present`. Ordinary build checks cannot overwrite the files being served by development or presentation mode. Do not start a second presentation build during an active presentation.
+The system is designed for staff working at a physical store - not for online shopping. It helps authorised users complete sales accurately, track inventory across stores, identify low-stock products, manage suppliers and purchase orders, understand customers, and make better day-to-day decisions using live operational data.
 
-1. In Purchase orders, select a store. Its current stock and reorder suggestions appear above the order form. Enter the expected delivery date when creating an order; it is shown in the order list. Receiving updates only the order's destination store.
-2. In POS, enter a counter name and choose **Connect phone scanner**. A random counter code and a QR link to `/scanner` appear. Keep this POS tab open.
-3. Connect the phone and laptop to the same Wi-Fi/hotspot. Run `npm run dev -- --hostname 0.0.0.0`; use the port printed by Next.js. The generated phone link uses a detected LAN address when POS is opened on localhost. Check that address if the laptop has multiple networks; firewall/client isolation may block access.
-4. On the phone, open `/scanner` at the laptop's address and enter the counter code. The code authorizes scan signals only, not checkout or account access. Sessions expire after one hour; **Disconnect phone** revokes the code immediately. Different POS tabs receive different codes even if counter names match.
-5. Open **Open / print product barcode labels** on the laptop, or visit `/barcodes`. Every current product has a label encoding its PostgreSQL `products.sku`; printable ASCII SKUs use Code 128 and other SKUs use QR. No new SQL column or barcode-image table is needed.
-6. On `/scanner`, choose **Scan next with camera** under HTTPS. For ordinary HTTP LAN access, use **Take barcode photo or choose image** instead: it decodes the photo locally and sends only the SKU and a unique scan ID. A manual SKU fallback is also available. Keep the complete barcode visible and in focus.
-7. Each accepted scan adds one unit to the paired cart, up to the stock shown at the POS. Polling delivers signals about once per second. The phone confirms delivery to the counter queue, while the POS enforces its cart limits. Checkout still verifies and locks real stock in PostgreSQL.
+## What we built
 
-MongoDB also holds temporary `pos_scanner_sessions` documents: random code, owner ID, store ID, counter name, expiry, and scan events. TTL expiry and a unique code index are created automatically on first pairing. Application expiry checks apply immediately. Repeated submissions with the same scan ID append only once; a session accepts at most 5,000 signals. This collection is a delivery queue, not authoritative stock or payment data. A refreshed POS page needs a new pairing; abandoned sessions expire automatically.
+- Secure sign-in with **Admin** and **Store Staff** roles. Store Staff can access only their assigned store.
+- A point-of-sale (POS) workflow with product search, cart controls, discounts, payments, receipts, and customer selection.
+- Atomic checkout: stock, orders, payments, stock movements, and loyalty points are saved together, or none are saved if a checkout fails.
+- Product and category management, including activation/deactivation, SKUs, prices, and barcode labels.
+- Per-store inventory, stock adjustments with reasons, movement history, low-stock alerts, and reorder suggestions.
+- Supplier management, purchase-order creation, expected delivery dates, and protected/idempotent stock receiving.
+- Customer profiles, purchase history, loyalty balances, and RFM-style segments: New, Regular, At-Risk, and VIP.
+- Dashboard and analytics for revenue, transactions, top-selling products, inventory health, and customer segments.
+- Phone-assisted barcode scanning: a phone can be paired securely with a POS counter to send SKU scans to its cart.
+- Audit logging for important business actions and flexible supplier document metadata.
 
-Review integration checks (local databases and running app required):
+## Functional modules
+
+| Module | Purpose |
+| --- | --- |
+| Authentication & authorisation | Secure sessions, role-based access, and store-level access control. |
+| POS & checkout | In-store billing, payment recording, receipts, discounts, and stock-safe checkout. |
+| Products & categories | Product catalogue, SKUs, pricing, categories, active status, and barcode labels. |
+| Inventory | Store-wise stock, adjustments, stock movements, low-stock alerts, and reordering support. |
+| Suppliers & purchase orders | Supplier records, order creation, delivery tracking, and receiving stock. |
+| Customers & loyalty | Customer details, purchase history, loyalty ledger, balances, and segmentation. |
+| Analytics | Sales trends, top products, inventory health, and customer insights. |
+| Scanner & audit trail | Counter-paired phone scanning and traceable audit events. |
+
+## Technologies and packages used
+
+- **Frontend and application framework:** Next.js 14 (App Router), React 18, TypeScript
+- **Backend:** Next.js Route Handlers and server-side service layer
+- **Relational database:** PostgreSQL, using `pg` for transactional data
+- **Document database:** MongoDB, using the official `mongodb` driver
+- **Authentication and validation:** `bcryptjs`, `jose`, and Zod
+- **Barcode and QR support:** `jsbarcode`, `qrcode`, and `@zxing/browser`
+- **Testing and quality:** Vitest, TypeScript, ESLint, and Docker Compose
+
+## Database design
+
+PostgreSQL is the source of truth for consistency-sensitive data and workflows, including users, stores, products, inventory, orders, order items, payments, purchase orders, stock movements, customers, and loyalty entries.
+
+MongoDB is used only where a flexible document structure is useful: supplier document metadata, append-only audit events, and temporary POS phone-scanner pairing sessions. It does not own stock quantities, payments, or order totals.
+
+## Setup and run locally
+
+### Prerequisites
+
+- Node.js 20 or later
+- npm
+- Docker Desktop (running)
+
+### Fastest setup
+
+From the project folder, run:
+
 ```bash
-TEST_APP_URL=http://localhost:3000 node --env-file=.env.local tests/review.integration.mjs
+npm run local
 ```
-The test creates uniquely named fixtures and removes only those fixtures afterward. It covers store restrictions, counter isolation/expiry/revocation, duplicate scan retries, expected-date persistence, store-specific receiving, concurrent receiving and rollback.
 
-## Quick start
-Run `npm run local` once. It creates `.env.local`, starts Docker, waits for PostgreSQL and MongoDB, installs dependencies, applies migrations and development seed data, configures MongoDB, and starts Next.js at `http://localhost:8080`.
+This command creates `.env.local` if needed, starts PostgreSQL and MongoDB using Docker, installs packages when `node_modules` is missing, applies database migrations and development seed data, configures MongoDB, and starts the app at [http://localhost:8080](http://localhost:8080).
 
-For separate steps, use `npm run setup` followed by `npm run dev`. The Docker services use PostgreSQL port `5433` and MongoDB port `27018`.
+### Step-by-step setup
 
-To expose the local development server temporarily, install and authenticate the ngrok CLI, then run `ngrok http 3000`. Keep the Next.js terminal, Docker Desktop, and ngrok process running. The public URL is generated by ngrok and changes between sessions.
+1. Create the local environment file:
 
-If a migration file that has already been applied is edited, the migration runner stops with an `Applied migration changed` error by design. Restore the applied file or create a new numbered migration; do not delete migration history or reset a shared database.
+   ```bash
+   cp .env.example .env.local
+   ```
 
-Development administrator: `admin@smartretail.local` / `Admin123!`. Change this password or remove the seeded user outside local demonstrations.
+   On Windows PowerShell, use:
 
-Run `npm run typecheck`, `npm test`, `npm run lint`, and `npm run build` before committing.
+   ```powershell
+   Copy-Item .env.example .env.local
+   ```
 
-## Important
-Analytics includes a small sales outlook and stock advice. It uses 14 complete India-time days, includes zero-sale days, withholds revenue estimates until sales exist on at least three days, and accounts for planned incoming purchase quantities. Admin can select a store; Staff remain scoped to their assigned store. No model training, automatic ordering or new database schema is involved.
+2. Set a secure value for `AUTH_SECRET` in `.env.local` (at least 32 random characters).
 
-This is a working local implementation, not a production deployment. It still needs production secrets, CSRF/rate-limit hardening, broader API/database/concurrency tests, backups, monitoring, and a deployment plan before real use.
+3. Start the databases and install dependencies:
+
+   ```bash
+   docker compose up -d
+   npm install
+   ```
+
+4. Apply PostgreSQL migrations, development seed data, and MongoDB configuration:
+
+   ```bash
+   npm run setup
+   ```
+
+   This configures MongoDB and applies the PostgreSQL scripts in this order: `001_schema.sql`, `002_indexes.sql`, `003_triggers_functions_views.sql`, then `004_seed.sql` for development data.
+
+5. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+   Open [http://localhost:3000](http://localhost:3000).
+
+### Development login
+
+| Email | Password |
+| --- | --- |
+| `admin@smartretail.local` | `Admin123!` |
+
+Change or remove this seeded account outside local demonstrations.
+
+## Useful commands
+
+```bash
+npm run dev          # Start the development server
+npm run local        # Run the complete local setup and start on port 8080
+npm run setup        # Prepare databases, migrations, seed data, and MongoDB configuration
+npm run db:migrate   # Apply PostgreSQL migrations
+npm run db:seed      # Apply migrations and development seed data
+npm run present      # Build and run presentation mode
+npm run typecheck    # Check TypeScript
+npm run lint         # Run linting
+npm test             # Run tests
+npm run build        # Create a production build
+```
+
+## Presentation notes
+
+For a stable demo, stop any process already using port 3000, ensure Docker is running, then run `npm run present`. Use `npm run present -- --port 3100` to choose a different port.
+
+For phone barcode scanning, keep the POS page open, select **Connect phone scanner**, and connect the phone and laptop to the same Wi-Fi or hotspot. The phone pairing code authorises scan signals only; checkout remains protected by the signed-in POS session and PostgreSQL stock checks.
+
+## Project status and limitations
+
+This is a working local academic project. Before a real production deployment, it would need production secrets, CSRF and rate-limit hardening, wider API/database/concurrency tests, backups, monitoring, and a deployment plan.
+
+The project intentionally does not include an online storefront, online carts or checkout, shipping, product reviews, recommendations, embeddings, or vector databases.
