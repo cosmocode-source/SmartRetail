@@ -2,7 +2,7 @@
 INSERT INTO stores(name, location) VALUES ('Main Store', 'Bengaluru');
 -- Development login: admin@smartretail.local / Admin123!
 INSERT INTO users(name, email, password_hash, role)
-VALUES ('Admin User', 'admin@smartretail.local', '$2a$12$C06ZwoHqiXKmZLop0G9idul4cR9IbkDWgoCbhVQjNqUT8iD.zvVni', 'admin');
+VALUES ('Demo Administrator', 'admin@smartretail.local', '$2a$12$C06ZwoHqiXKmZLop0G9idul4cR9IbkDWgoCbhVQjNqUT8iD.zvVni', 'admin');
 INSERT INTO categories(name) VALUES ('Grocery'), ('Beverages'), ('Household');
 INSERT INTO suppliers(name, email, phone) VALUES ('Northstar Supplies', 'orders@example.invalid', '+91-0000000000');
 INSERT INTO products(category_id, supplier_id, sku, name, description, price)

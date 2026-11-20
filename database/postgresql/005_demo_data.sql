@@ -24,8 +24,8 @@ ON CONFLICT (product_id, store_id) DO NOTHING;
 INSERT INTO customers(name, phone, email)
 SELECT data.name, data.phone, data.email
 FROM (VALUES
-  ('Aarav Sharma', '+91-9000000001', 'aarav@example.invalid'),
-  ('Diya Patel', '+91-9000000002', 'diya@example.invalid'),
-  ('Rohan Mehta', '+91-9000000003', 'rohan@example.invalid')
+  ('Demo Customer One', '+91-9000000001', 'customer.one@example.invalid'),
+  ('Demo Customer Two', '+91-9000000002', 'customer.two@example.invalid'),
+  ('Demo Customer Three', '+91-9000000003', 'customer.three@example.invalid')
 ) AS data(name, phone, email)
 WHERE NOT EXISTS (SELECT 1 FROM customers c WHERE c.phone = data.phone);
